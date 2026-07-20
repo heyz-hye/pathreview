@@ -12,7 +12,14 @@
 The database probe in `api/routes/health.py` calls `db.execute("SELECT 1")` with a plain Python string. SQLAlchemy 2.x requires textual SQL to be wrapped explicitly with `sqlalchemy.text()`, so this call raises an `ArgumentError` instead of running the query. Because the health check catches that exception and marks postgres as unhealthy, `GET /health` reports the database as down even when it's fully reachable, which would falsely trip alerting/monitoring on a healthy deployment. A successful fix wraps the raw string in `text()` so the probe executes correctly and only reports "unhealthy" when the database is actually unreachable.
 
 **"Is this right for me?" checklist reasoning:**
-[TODO: paste checklist questions/content so this can be filled in accurately]
+
+*Part 1 — Understanding the issue:* The `/health` route calls `db.execute("SELECT 1")` with a bare string. SQLAlchemy 2.x only accepts raw SQL wrapped in `sqlalchemy.text()`, so the call raises `ArgumentError`, which the route's `except Exception` catches and reports as `postgres: "unhealthy"` — even when the database is completely reachable. A correct fix makes the probe run cleanly and report `"healthy"` when Postgres is actually up, `"unhealthy"` only when it's actually down. Affected area: `api/routes/health.py` (label `api`).
+
+*Part 2 — Tier fit:* Labeled `tier-1` in the tracker, and it matches the Tier 1 description — the change lives in one file, is a one-line fix (`text("SELECT 1")`), and doesn't require understanding how modules interact. This is my first contribution to a codebase this size, so Tier 1 is the right level.
+
+*Part 3 — Codebase readiness:* Found and read the exact line (`api/routes/health.py:31`) and the surrounding `try/except` blocks for redis and vector_db, which follow the same pattern. Confirmed `core/database.py` uses the async SQLAlchemy 2.x engine (`create_async_engine`/`AsyncSession`), which is why `text()` is required. There's no existing test file for the health route (`tests/unit` and `tests/integration` have no `health` or `api` test files), so I'll add one — `tests/unit/test_review_service.py` shows the project's pattern for mocking an async db session with `AsyncMock`, which I'll follow.
+
+*Part 4 — Scope and time:* Several others have already commented on the issue and opened PRs against it (this is a practice repo, so duplicate work across the cohort is expected and fine). Scope is small — I already applied and verified the fix locally (confirmed via `GET /health` returning `postgres: "healthy"`), well within the Tier 1 3–6 hour estimate. No blockers or dependencies on other issues.
 
 **Branch name:** fix/154-health-check-raw-sql
 
