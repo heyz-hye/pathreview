@@ -26,3 +26,17 @@ The database probe in `api/routes/health.py` calls `db.execute("SELECT 1")` with
 **Setup confirmation:** [x] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
+
+## Week 8 — Reproduction & solution planning
+
+**Reproduction commit link:** https://github.com/heyz-hye/pathreview/commit/bbed07a
+
+**Reproduction summary:**
+I reproduced the bug by hitting `GET /health` against a reachable Postgres and observing a `503` with `postgres: "unhealthy"`. The raw `db.execute("SELECT 1")` call raised SQLAlchemy 2.x's `ArgumentError` (textual SQL must be wrapped in `text()`), which the route's `except Exception` swallowed and mislabeled as the database being down. Commit `bbed07a` documents and fixes the reproduced issue; `af548af` adds a regression test that fails on the raw-string version and passes after wrapping in `text()`.
+
+**PLAN.md link:** https://github.com/heyz-hye/pathreview/blob/fix/154-health-check-raw-sql/PLAN.md
+
+**Walkthrough video (recommended):** [not recorded]
+
+**Blockers or open questions:**
+None blocking. Open follow-up: grep the wider codebase for other raw-string `db.execute("...")` calls that may hit the same SQLAlchemy 2.x issue outside the scope of #154.
