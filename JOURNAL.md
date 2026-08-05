@@ -58,7 +58,7 @@ None. This is a docs-only change (no code paths touched), so there are no new un
 
 ### Check-in 2 (end of week)
 
-**PR link:** [link to your submitted pull request]
+**PR link:** https://github.com/ascherj/pathreview/pull/720
 
 **Branch:** `docs/89-profiles-reviews-request-schema`
 
