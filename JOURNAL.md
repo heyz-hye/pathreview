@@ -70,4 +70,4 @@ Documentation-only change — no code paths were modified, so no test files were
 
 **Self-review confirmation:** [x] make check passes (no new failures vs. `main`)  [x] make test-unit passes (no new failures vs. `main`)
 
-**Draft PR feedback received from:** [name or Slack handle, or "none"]
+**Draft PR feedback received from:** Peer review in Slack came back as feedback for issue #151 (bias detector patterns) rather than #89 — mismatched/misdirected, not applicable to this docs change. Re-requesting feedback on the correct PR.
